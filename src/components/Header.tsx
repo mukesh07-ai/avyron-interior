@@ -2,14 +2,24 @@
 
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { Moon, Sun, ChevronDown, Globe, Menu } from "lucide-react";
+import { Moon, Sun, ChevronDown, Globe, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
+const navLinks = [
+  { name: "Studio", href: "/about-us" },
+  { name: "Residential Design", href: "/services/residential" },
+  { name: "Commercial Interiors", href: "/services/commercial" },
+  { name: "Portfolio", href: "/projects" },
+  { name: "Design Journal", href: "/blog" },
+  { name: "Contact", href: "/contact" },
+];
 
 export function Header() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -45,14 +55,7 @@ export function Header() {
 
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center gap-0.5">
-          {[
-            { name: "Studio", href: "/about-us" },
-            { name: "Residential Design", href: "/services/residential" },
-            { name: "Commercial Interiors", href: "/services/commercial" },
-            { name: "Portfolio", href: "/projects" },
-            { name: "Design Journal", href: "/blog" },
-            { name: "Contact", href: "/contact" },
-          ].map((item) => (
+          {navLinks.map((item) => (
             <div key={item.name} className="relative px-2 xl:px-3 py-2 group whitespace-nowrap">
               <Link href={item.href} className="relative z-10 flex items-center gap-1 group outline-none">
                 <span className="text-sm font-semibold transition-colors duration-300 text-navy/70 dark:text-slate-400 group-hover:text-navy dark:group-hover:text-slate-200">
@@ -70,7 +73,7 @@ export function Header() {
           {mounted && (
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground text-navy dark:text-slate-300 rounded-full relative w-10 h-10 hidden sm:inline-flex"
+              className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground text-navy dark:text-slate-300 rounded-full relative w-10 h-10"
               type="button"
               aria-label="Toggle theme"
             >
@@ -96,11 +99,64 @@ export function Header() {
           </Link>
 
           {/* Mobile Menu Toggle */}
-          <button type="button" className="lg:hidden p-2 rounded-full bg-navy/5 dark:bg-white/5 text-navy dark:text-slate-300 hover:bg-navy/10 dark:hover:bg-white/10 transition-colors" aria-label="Open menu">
-            <Menu className="w-5 h-5" />
+          <button 
+            type="button" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2 rounded-full bg-navy/5 dark:bg-white/5 text-navy dark:text-slate-300 hover:bg-navy/10 dark:hover:bg-white/10 transition-colors" 
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="absolute top-[calc(100%+1rem)] left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-2xl rounded-3xl py-6 px-4 flex flex-col gap-2 lg:hidden overflow-hidden pointer-events-auto origin-top"
+            >
+              <div className="flex flex-col gap-1 max-h-[60vh] overflow-y-auto px-2">
+                {navLinks.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-lg font-medium text-navy/80 dark:text-slate-300 hover:text-saffron dark:hover:text-saffron transition-colors px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl w-full"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+              <div className="flex flex-col gap-4 px-6 mt-2 pt-4 border-t border-black/10 dark:border-white/10">
+                <Link href="/contact" className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                  <button className="w-full py-3 rounded-full bg-navy text-white hover:bg-saffron transition-colors shadow-md text-sm font-semibold">
+                    Consultation
+                  </button>
+                </Link>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-navy/80 dark:text-slate-300">
+                    <Globe className="w-5 h-5" />
+                    <span className="text-sm font-semibold">English</span>
+                  </div>
+                  {mounted && (
+                    <button
+                      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                      className="p-2 rounded-full bg-navy/5 dark:bg-white/5 text-navy dark:text-slate-300 hover:bg-navy/10 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
+                    >
+                      {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.header>
     </div>
   );
 }
+
